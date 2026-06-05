@@ -96,10 +96,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .viewer-nav-btn:hover{background:var(--surface2);color:var(--text)}
 .viewer-nav-btn.active{background:var(--surface2);color:var(--accent);border-left-color:var(--accent)}
 .viewer-nav-btn.hidden{display:none}
-#viewer-main{flex:1;overflow:auto;background:var(--bg);position:relative}
+#viewer-main{flex:1;overflow:hidden;background:var(--bg);position:relative;display:flex;flex-direction:column;min-height:0}
 
 /* TIMETABLE VIEW */
-.tt-view{padding:16px}
+.tt-view{padding:16px;overflow:auto}
 .tt-entity-name{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px}
 .tt-entity-sub{font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.5}
 .tt-week{display:flex;flex-direction:column;gap:3px;position:relative}
@@ -159,7 +159,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .c-misc{background:#1e1e24;border-color:#78909c;color:#b0bec5}
 
 /* EMPTY STATE */
-.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:300px;color:var(--muted);gap:10px}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;min-height:300px;color:var(--muted);gap:10px}
 .empty-state .icon{font-size:32px;opacity:.4}
 .empty-state p{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-align:center;max-width:260px;line-height:1.6}
 
@@ -180,6 +180,205 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .modal h3{font-family:var(--mono);font-size:13px;color:var(--text);margin-bottom:10px}
 .modal p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+/* ── VIEW TOGGLE ── */
+.view-toggle{display:flex;gap:4px;margin-bottom:0}
+.view-btn{font-family:var(--mono);font-size:10px;padding:4px 14px;border-radius:4px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;letter-spacing:.05em;text-transform:uppercase;transition:all .15s}
+.view-btn:hover{color:var(--text);border-color:var(--muted)}
+.view-btn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+
+/* ── DAY NAV ── */
+.day-nav{display:flex;align-items:center;gap:8px}
+.day-nav-arrow{width:26px;height:26px;border-radius:4px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;flex-shrink:0;transition:background .12s}
+.day-nav-arrow:hover{background:var(--border2)}
+.day-nav-label{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);min-width:160px;text-align:center}
+.day-nav-today{font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .12s}
+.day-nav-today:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ── DAY VIEW ── */
+/* outer container fills the remaining height */
+.tt-day-view{
+  display:flex;flex-direction:column;
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;
+  flex:1;           /* take all remaining vertical space */
+}
+/* every period row */
+.tt-dv-row{
+  display:flex;align-items:stretch;
+  border-bottom:1px solid var(--border);
+  position:relative;
+  flex:1;           /* each row shares height equally */
+  min-height:0;     /* allow shrink */
+}
+.tt-dv-row:last-child{border-bottom:none}
+.tt-dv-row.is-break{flex:0 0 36px;background:repeating-linear-gradient(45deg,rgba(255,255,255,.009),rgba(255,255,255,.009) 3px,transparent 3px,transparent 8px)}
+
+/* left: period label */
+.tt-dv-period{
+  width:100px;flex-shrink:0;
+  background:var(--surface3);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4px 6px;gap:1px;
+}
+.tt-dv-period-label{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent2)}
+.tt-dv-period-time{font-family:var(--mono);font-size:9px;color:var(--muted);white-space:nowrap}
+.tt-dv-period.is-break{background:transparent}
+.tt-dv-period.is-break .tt-dv-period-label{color:var(--muted2);font-size:10px;font-weight:400}
+
+/* right: slots area */
+.tt-dv-slots{
+  flex:1;display:flex;flex-direction:row;flex-wrap:wrap;
+  gap:5px;padding:5px 8px;align-content:center;
+  background:var(--bg);overflow:hidden;
+}
+.tt-dv-row.is-break .tt-dv-slots{background:transparent;align-items:center}
+
+/* individual slot bar in day view */
+.tt-dv-slot{
+  border-radius:5px;padding:5px 9px;
+  border-left:3px solid transparent;
+  flex:1;min-width:130px;max-width:260px;
+  display:flex;flex-direction:column;gap:2px;
+  overflow:hidden;
+}
+.tt-dv-slot-top{display:flex;align-items:center;gap:6px}
+.tt-dv-slot-subj{font-family:var(--mono);font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-dv-slot-meta{font-size:10px;opacity:.82;display:flex;gap:8px;flex-wrap:wrap}
+.tt-dv-slot-meta span{white-space:nowrap}
+.tt-dv-empty{color:var(--muted2);font-family:var(--mono);font-size:11px;align-self:center}
+
+/* ── NOW LINE in day view — horizontal red bar ── */
+.tt-dv-now-line{
+  position:absolute;
+  left:100px;right:0;   /* starts after the period label column */
+  height:2px;
+  background:var(--red);
+  z-index:20;
+  pointer-events:none;
+  box-shadow:0 0 8px rgba(224,92,92,.65);
+}
+.tt-dv-now-line::before{
+  content:'';position:absolute;left:-5px;top:-4px;
+  width:10px;height:10px;
+  background:var(--red);border-radius:50%;
+  box-shadow:0 0 8px rgba(224,92,92,.9);
+}
+.tt-dv-now-time{
+  position:absolute;left:100px;
+  font-family:var(--mono);font-size:9px;color:var(--red);
+  background:var(--bg);padding:0 4px;line-height:1;
+  z-index:21;pointer-events:none;
+  transform:translateY(-100%);
+  margin-top:-1px;
+}
+/* tt-view in day mode: make it a flex column that fills height */
+.tt-view.day-mode{
+  display:flex;flex-direction:column;
+  height:calc(100vh - 44px);
+  padding:12px 14px;
+  overflow:hidden;
+}
+.tt-view.day-mode .tt-entity-name{margin-bottom:1px}
+.tt-view.day-mode .tt-entity-sub{margin-bottom:8px}
+
+/* ── PRINT BUTTON ── */
+.print-btn{font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:4px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;letter-spacing:.05em;display:flex;align-items:center;gap:5px;transition:all .15s;margin-left:auto}
+.print-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── PRINT STYLES ── */
+@media print {
+  /* hide everything except the timetable content */
+  body { background: #fff !important; color: #000 !important; }
+  #topbar, #entry-page, #viewer-sidebar,
+  .view-toggle, .day-nav, .print-btn,
+  #toast, .modal-bg { display: none !important; }
+
+  #viewer-page { display: block !important; height: auto !important; }
+  #viewer-main  { display: block !important; overflow: visible !important; height: auto !important; }
+  #viewer-content { display: block !important; flex: none !important; overflow: visible !important; height: auto !important; }
+
+  .tt-view, .tt-view.day-mode {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  /* print header */
+  .tt-entity-name { font-size: 14pt !important; color: #000 !important; margin-bottom: 2pt !important; }
+  .tt-entity-sub  { font-size: 9pt  !important; color: #444 !important; margin-bottom: 8pt !important; }
+
+  /* week view rows */
+  .tt-week { gap: 2pt !important; }
+  .tt-day-row {
+    border: 1px solid #ccc !important;
+    border-radius: 0 !important;
+    page-break-inside: avoid;
+    overflow: visible !important;
+  }
+  .tt-day-name { background: #f0f0f0 !important; color: #000 !important; width: 32pt !important; font-size: 8pt !important; }
+  .tt-periods { overflow: visible !important; flex-wrap: wrap !important; }
+  .tt-period-cell { min-width: 60pt !important; flex: 1 !important; border-right: 1px solid #ddd !important; }
+  .tt-period-hdr { background: #f5f5f5 !important; padding: 2pt 4pt !important; }
+  .tt-p-label { font-size: 8pt !important; color: #333 !important; }
+  .tt-p-time  { font-size: 7pt !important; color: #666 !important; }
+  .tt-period-body { min-height: 36pt !important; padding: 2pt !important; background: #fff !important; }
+  .tt-bar {
+    border-left-width: 3pt !important;
+    padding: 3pt 5pt !important;
+    border-radius: 2pt !important;
+    margin-bottom: 2pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .tt-bar-subj { font-size: 8pt !important; color: #000 !important; }
+  .tt-bar-grade { font-size: 7pt !important; }
+  .tt-bar-room { font-size: 7pt !important; color: #333 !important; }
+  .tt-empty-cell { font-size: 8pt !important; color: #aaa !important; }
+  .tt-break { min-width: 36pt !important; background: #fafafa !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .tt-break-label { font-size: 7pt !important; color: #888 !important; }
+  .tt-now-line { display: none !important; }
+
+  /* day view */
+  .tt-day-view { display: table !important; width: 100% !important; border-collapse: collapse !important; border: 1px solid #ccc !important; height: auto !important; }
+  .tt-dv-row { display: table-row !important; height: auto !important; min-height: 0 !important; page-break-inside: avoid; }
+  .tt-dv-row.is-break { height: 18pt !important; }
+  .tt-dv-period { display: table-cell !important; width: 70pt !important; background: #f5f5f5 !important; border-right: 1px solid #ccc !important; border-bottom: 1px solid #eee !important; padding: 4pt 5pt !important; vertical-align: middle !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .tt-dv-period-label { font-size: 9pt !important; color: #333 !important; }
+  .tt-dv-period-time  { font-size: 7pt !important; color: #666 !important; }
+  .tt-dv-slots { display: table-cell !important; padding: 3pt 5pt !important; border-bottom: 1px solid #eee !important; vertical-align: middle !important; background: #fff !important; }
+  .tt-dv-slot { display: inline-block !important; border-left-width: 3pt !important; padding: 3pt 6pt !important; margin: 2pt !important; border-radius: 2pt !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .tt-dv-slot-subj { font-size: 8pt !important; color: #000 !important; }
+  .tt-dv-slot-meta { font-size: 7pt !important; color: #444 !important; }
+  .tt-dv-now-line, .tt-dv-now-time { display: none !important; }
+
+  /* preserve subject colours on print */
+  .c-phy  { background: #d4eff5 !important; border-color: #4fc3d4 !important; }
+  .c-chem { background: #d4eedd !important; border-color: #4dc98a !important; }
+  .c-bio  { background: #e0edcc !important; border-color: #8bc34a !important; }
+  .c-math { background: #fdefd4 !important; border-color: #ffb74d !important; }
+  .c-cs   { background: #ecdff5 !important; border-color: #ce93d8 !important; }
+  .c-eco  { background: #fce4ee !important; border-color: #f48fb1 !important; }
+  .c-bs   { background: #d4eeec !important; border-color: #80cbc4 !important; }
+  .c-fle  { background: #fef3e0 !important; border-color: #ffcc80 !important; }
+  .c-esl  { background: #d4f3f7 !important; border-color: #80deea !important; }
+  .c-psy  { background: #e8eaf6 !important; border-color: #c5cae9 !important; }
+  .c-acc  { background: #fce4f0 !important; border-color: #f8bbd9 !important; }
+  .c-em   { background: #dff0e0 !important; border-color: #a5d6a7 !important; }
+  .c-add  { background: #fde8de !important; border-color: #ffab91 !important; }
+  .c-gp   { background: #f9fad4 !important; border-color: #e6ee9c !important; }
+  .c-hindi{ background: #fde0dc !important; border-color: #ffb3a7 !important; }
+  .c-fr   { background: #e3eafa !important; border-color: #90caf9 !important; }
+  .c-sp   { background: #fde3e3 !important; border-color: #ef9a9a !important; }
+  .c-socio{ background: #eceff1 !important; border-color: #b0bec5 !important; }
+  .c-sports{background: #fde3e3 !important; border-color: #ef9a9a !important; }
+  .c-misc { background: #eceff1 !important; border-color: #78909c !important; }
+
+  /* grade badge colours on print */
+  .tt-bar-grade { background: #eee !important; color: #333 !important; border: 1px solid #ccc !important; }
+
+  @page { margin: 10mm; size: A4 landscape; }
+}
 </style>
 </head>
 <body>
@@ -354,7 +553,25 @@ function getGradeColumns(isSat) {
 // LOCALSTORAGE
 // ═══════════════════════════════════════════════════════
 const LS_KEY = 'ttOS_v4';
-function loadState() { try { const r=localStorage.getItem(LS_KEY); return r?JSON.parse(r):null; } catch(e){return null;} }
+function loadState() {
+  try {
+    // Try current key first
+    let r = localStorage.getItem(LS_KEY);
+    if (r) return JSON.parse(r);
+    // Migrate from previous versions
+    for (const oldKey of ['ttOS_v3','ttOS_v2','ttOS_v1']) {
+      r = localStorage.getItem(oldKey);
+      if (r) {
+        const data = JSON.parse(r);
+        localStorage.setItem(LS_KEY, r); // migrate
+        localStorage.removeItem(oldKey);
+        console.log('Migrated from', oldKey);
+        return data;
+      }
+    }
+    return null;
+  } catch(e) { return null; }
+}
 function saveState() {
   const s = readCurrentState();
   localStorage.setItem(LS_KEY, JSON.stringify(s));
@@ -674,7 +891,9 @@ function parseAll(state) {
   const students=[];
   for (const s of (state.students||[])) {
     if (!s.name) continue;
-    const gradeNum=s.grade.trim();
+    // Grade may be "9", "9A", "9 A", "9B" etc — extract leading digit(s)
+    const gradeNum = (s.grade.trim().match(/^(\d+)/)||['',''])[1];
+    const division = s.grade.trim().replace(/^\d+\s*/,'').trim(); // "A", "B", ""
     const gKey='G'+gradeNum;
     const sectionCodes=s.sections.split(',').map(x=>x.trim()).filter(Boolean).map(normalise);
     const tt={};
@@ -692,7 +911,7 @@ function parseAll(state) {
         }
       }
     }
-    students.push({name:s.name, grade:gradeNum, gKey, sectionCodes, tt});
+    students.push({name:s.name, grade:gradeNum, division, gKey, sectionCodes, tt});
   }
 
   return {teachers, students, gradeData};
@@ -707,11 +926,30 @@ function findTeacherForSection(teachers, gKey, sub) {
 }
 
 function rebuildAll() {
-  PARSED = parseAll(readCurrentState());
+  const state = readCurrentState();
+  const rawStudents = (state.students||[]).filter(s=>s.name);
+  PARSED = parseAll(state);
+
+  // Safety: if parseAll returned no students but raw data exists, use raw list
+  if (PARSED.students.length === 0 && rawStudents.length > 0) {
+    PARSED.students = rawStudents.map(s=>{
+      const gradeNum = ((s.grade||'').trim().match(/^(\d+)/)||['',''])[1];
+      const division = (s.grade||'').trim().replace(/^\d+\s*/,'').trim();
+      return {
+        name: s.name,
+        grade: gradeNum,
+        division,
+        gKey: 'G'+gradeNum,
+        sectionCodes: (s.sections||'').split(',').map(x=>normalise(x.trim())).filter(Boolean),
+        tt: Object.fromEntries(DAYS.map(d=>[d,{}]))
+      };
+    });
+  }
+
   updateTeacherBadge(); updateStudentBadge();
   GRADES.forEach(g=>updateGradeBadge(g));
   buildViewerSidebar();
-  toast('Viewer updated');
+  toast(`✓ ${PARSED.teachers.length} teachers · ${PARSED.students.length} students`);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -731,8 +969,8 @@ function setViewerMode(mode) {
 }
 
 function showViewerEmpty() {
-  document.getElementById('viewer-empty').style.display='flex';
-  document.getElementById('viewer-content').style.display='none';
+  document.getElementById('viewer-empty').style.cssText='display:flex;flex:1';
+  document.getElementById('viewer-content').style.cssText='display:none;flex:0';
 }
 
 function buildViewerSidebar() {
@@ -761,26 +999,36 @@ function buildViewerSidebar() {
   // Students
   const sList=document.getElementById('viewer-student-list');
   sList.innerHTML='';
-  if (!PARSED.students.length) {
-    sList.innerHTML='<div style="padding:14px;font-size:11px;color:var(--muted)">No students entered yet.<br>Add them in Data Entry → Students.</div>';
+  const studentCount = PARSED.students.length;
+  if (!studentCount) {
+    sList.innerHTML=`<div style="padding:14px;font-size:11px;color:var(--muted)">No students found.<br>Click ↻ Rebuild Viewer in Data Entry.</div>`;
   } else {
-    // Group by grade
+    // Group by grade — use gKey directly, not GRADES filter
     const byGrade={};
     for (const s of PARSED.students) {
-      if (!byGrade[s.gKey]) byGrade[s.gKey]=[];
-      byGrade[s.gKey].push(s);
+      const key = s.gKey || 'Unknown';
+      if (!byGrade[key]) byGrade[key]=[];
+      byGrade[key].push(s);
     }
-    for (const g of GRADES) {
-      if (!byGrade[g]) continue;
-      const lbl=document.createElement('div'); lbl.className='viewer-section-label'; lbl.textContent=g;
+    // Sort grade keys: GRADES order first, then any others
+    const gradeKeys = [
+      ...GRADES.filter(g=>byGrade[g]),
+      ...Object.keys(byGrade).filter(k=>!GRADES.includes(k))
+    ];
+    for (const g of gradeKeys) {
+      const lbl=document.createElement('div');
+      lbl.className='viewer-section-label';
+      lbl.textContent=`${g} (${byGrade[g].length})`;
       sList.appendChild(lbl);
       for (const s of byGrade[g]) {
         const btn=document.createElement('button');
         btn.className='viewer-nav-btn';
-        btn.dataset.search=(s.name+' '+g).toLowerCase();
+        btn.dataset.search=((s.name||'')+' '+g).toLowerCase();
         btn.style.cssText='flex-direction:column;align-items:flex-start;gap:1px;padding:5px 14px;height:auto';
+        const preview = s.sectionCodes.slice(0,4).join(', ') || '(no sections)';
+        const divLabel = s.division ? ` ${s.division}` : '';
         btn.innerHTML=`<span style="color:var(--text);font-size:11px;font-weight:500">${esc(s.name)}</span>
-          <span style="font-size:10px;color:var(--muted)">${g} · ${s.sectionCodes.slice(0,4).join(', ')}</span>`;
+          <span style="font-size:10px;color:var(--muted)">${g}${esc(divLabel)} · ${esc(preview)}</span>`;
         const sc=s;
         btn.onclick=()=>{
           sList.querySelectorAll('.viewer-nav-btn').forEach(b=>b.classList.remove('active'));
@@ -934,34 +1182,243 @@ function renderWeek(container, getDayPeriodSlots, isTeacherView) {
 }
 
 // ═══════════════════════════════════════════════════════
-// SHOW TEACHER / STUDENT TT
+// VIEW STATE
 // ═══════════════════════════════════════════════════════
-function showTeacherTT(teacher) {
-  const content=document.getElementById('viewer-content');
-  document.getElementById('viewer-empty').style.display='none';
-  content.style.display='block'; content.innerHTML='';
-  const wrap=document.createElement('div'); wrap.className='tt-view';
-  wrap.innerHTML=`<div class="tt-entity-name">👤 ${esc(teacher.name)}</div>
-    <div class="tt-entity-sub">${esc(teacher.raw)}</div>`;
-  renderWeek(wrap, (d,pid)=>{
-    const s=(teacher.tt[d]||{})[pid]; return s&&s.length?s:null;
-  }, true);
+let currentView = 'week';   // 'week' | 'day'
+let currentDayIdx = 0;      // 0=MON … 5=SAT
+let currentGetSlots = null; // function(day, periodId) -> slots[]
+let currentIsTeacher = true;
+let currentEntityName = '';
+let currentEntitySub  = '';
+
+function setViewType(v) {
+  currentView = v;
+  renderCurrentEntity();
+}
+
+function navDay(delta) {
+  currentDayIdx = (currentDayIdx + delta + DAYS.length) % DAYS.length;
+  renderCurrentEntity();
+}
+
+function jumpToToday() {
+  const jsDay = new Date().getDay(); // 0=Sun
+  const found = DAYS.findIndex(d => DAY_TO_JS[d] === jsDay);
+  currentDayIdx = found >= 0 ? found : 0;
+  renderCurrentEntity();
+}
+
+function renderCurrentEntity() {
+  if (!currentGetSlots) return;
+  const content = document.getElementById('viewer-content');
+  // Hide empty state, show content
+  document.getElementById('viewer-empty').style.cssText = 'display:none;flex:0';
+  const isDayView = (currentView === 'day');
+
+  // content container fills viewer-main
+  content.style.cssText = isDayView
+    ? 'display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0'
+    : 'flex:1;overflow:auto;min-height:0';
+  content.innerHTML = '';
+
+  const wrap = document.createElement('div');
+  wrap.className = isDayView ? 'tt-view day-mode' : 'tt-view';
+
+  // Name + subtitle
+  const nameEl = document.createElement('div'); nameEl.className='tt-entity-name'; nameEl.innerHTML=currentEntityName;
+  const subEl  = document.createElement('div'); subEl.className='tt-entity-sub';   subEl.textContent=currentEntitySub.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+  wrap.appendChild(nameEl);
+  wrap.appendChild(subEl);
+
+  // Controls row: toggle + day nav
+  const ctrl = document.createElement('div');
+  ctrl.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;flex-shrink:0';
+
+  const toggle = document.createElement('div');
+  toggle.className = 'view-toggle';
+  toggle.innerHTML = `<button class="view-btn ${currentView==='week'?'active':''}" onclick="setViewType('week')">Week</button>
+    <button class="view-btn ${currentView==='day'?'active':''}" onclick="setViewType('day')">Day</button>`;
+  ctrl.appendChild(toggle);
+
+  if (isDayView) {
+    const todayJsDay = new Date().getDay();
+    const todayIdx = DAYS.findIndex(d => DAY_TO_JS[d] === todayJsDay);
+    const isTodayShown = currentDayIdx === todayIdx;
+    const nav = document.createElement('div');
+    nav.className = 'day-nav';
+    nav.innerHTML = `<button class="day-nav-arrow" onclick="navDay(-1)">‹</button>
+      <span class="day-nav-label">${DAYS[currentDayIdx]} &nbsp;·&nbsp; ${ ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][currentDayIdx]}</span>
+      <button class="day-nav-arrow" onclick="navDay(1)">›</button>
+      ${isTodayShown
+        ? '<span style="font-family:var(--mono);font-size:10px;color:var(--red);padding:0 4px">● Today</span>'
+        : '<button class="day-nav-today" onclick="jumpToToday()">Today</button>'}`;
+    ctrl.appendChild(nav);
+  }
+
+  // Print button — always visible
+  const printBtn = document.createElement('button');
+  printBtn.className = 'print-btn';
+  printBtn.innerHTML = '🖨 Print';
+  printBtn.onclick = () => window.print();
+  ctrl.appendChild(printBtn);
+
+  wrap.appendChild(ctrl);
+
+  if (isDayView) {
+    // day-view gets a flex:1 container so it fills remaining height
+    const dayContainer = document.createElement('div');
+    dayContainer.style.cssText = 'flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0';
+    renderDay(dayContainer, DAYS[currentDayIdx], currentGetSlots, currentIsTeacher);
+    wrap.appendChild(dayContainer);
+  } else {
+    renderWeek(wrap, currentGetSlots, currentIsTeacher);
+  }
+
   content.appendChild(wrap);
   scheduleNowLineUpdate();
 }
 
+// ═══════════════════════════════════════════════════════
+// RENDER DAY — vertical timeline, fills container height
+// ═══════════════════════════════════════════════════════
+function renderDay(container, dayName, getDayPeriodSlots, isTeacherView) {
+  const isSat = dayName === 'SAT';
+  const periods = isSat ? SAT_PERIODS : REG_PERIODS;
+  const isToday = new Date().getDay() === DAY_TO_JS[dayName];
+  const nowMins = isToday ? (new Date().getHours()*60 + new Date().getMinutes()) : -1;
+
+  const dayView = document.createElement('div');
+  dayView.className = 'tt-day-view';
+
+  // Track which row has the now-line so we can position it after layout
+  let nowRowEl = null, nowFrac = 0;
+
+  periods.forEach((p, pi) => {
+    const isBreak = !!p.isBreak;
+    const [startStr, endStr] = p.time.split('–');
+    const pStart = timeToMins(startStr), pEnd = timeToMins(endStr);
+
+    const row = document.createElement('div');
+    row.className = 'tt-dv-row' + (isBreak ? ' is-break' : '');
+    row.style.position = 'relative'; // always relative for now-line
+
+    // ── Period label column ──
+    const periodCol = document.createElement('div');
+    periodCol.className = 'tt-dv-period' + (isBreak ? ' is-break' : '');
+    const [startT, endT] = p.time.split('–');
+    if (isBreak) {
+      periodCol.innerHTML = `<div class="tt-dv-period-label">${p.label}</div>`;
+    } else {
+      periodCol.innerHTML = `<div class="tt-dv-period-label">${p.label}</div>
+        <div class="tt-dv-period-time">${startT}</div>
+        <div class="tt-dv-period-time" style="opacity:.55">→ ${endT}</div>`;
+    }
+    row.appendChild(periodCol);
+
+    // ── Slots column ──
+    const slotsCol = document.createElement('div');
+    slotsCol.className = 'tt-dv-slots';
+
+    if (isBreak) {
+      const lbl = document.createElement('div');
+      lbl.className = 'tt-dv-empty'; lbl.textContent = p.label;
+      slotsCol.appendChild(lbl);
+    } else {
+      const slots = getDayPeriodSlots(dayName, p.id);
+      if (slots && slots.length) {
+        for (const slot of slots) {
+          const bar = document.createElement('div');
+          bar.className = `tt-dv-slot ${getSubjectColor(slot.sub)} grade-${slot.grade||''}`;
+          if (isTeacherView) {
+            bar.innerHTML = `<div class="tt-dv-slot-top">
+              <span class="tt-dv-slot-subj">${esc(slot.sub)}</span>
+              <span class="tt-bar-grade">${esc(slot.grade)}</span>
+            </div>
+            <div class="tt-dv-slot-meta">
+              ${slot.room ? `<span>🏫 ${esc(slot.room)}</span>` : ''}
+            </div>`;
+          } else {
+            bar.innerHTML = `<div class="tt-dv-slot-top">
+              <span class="tt-dv-slot-subj">${esc(slot.sub)}</span>
+              ${slot.room ? `<span class="tt-bar-grade">🏫 ${esc(slot.room)}</span>` : ''}
+            </div>
+            <div class="tt-dv-slot-meta">
+              ${slot.teacher ? `<span>👤 ${esc(slot.teacher)}</span>` : ''}
+            </div>`;
+          }
+          slotsCol.appendChild(bar);
+        }
+      } else {
+        const emp = document.createElement('div');
+        emp.className = 'tt-dv-empty'; emp.textContent = '—';
+        slotsCol.appendChild(emp);
+      }
+    }
+    row.appendChild(slotsCol);
+
+    // ── Determine if now-line belongs in this row ──
+    if (isToday && nowMins >= 0) {
+      // Within this period
+      if (nowMins >= pStart && nowMins <= pEnd) {
+        nowRowEl = row;
+        nowFrac = (nowMins - pStart) / (pEnd - pStart);
+      }
+      // In the gap between this period and the next
+      else if (pi < periods.length - 1) {
+        const nextStart = timeToMins(periods[pi+1].time.split('–')[0]);
+        if (nowMins > pEnd && nowMins < nextStart) {
+          nowRowEl = row;
+          nowFrac = 1; // bottom of this row
+        }
+      }
+    }
+
+    dayView.appendChild(row);
+  });
+
+  container.appendChild(dayView);
+
+  // ── Inject now-line after layout (need row offsetHeight) ──
+  if (nowRowEl) {
+    const now = new Date();
+    const nowStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+    const line = document.createElement('div');
+    line.className = 'tt-dv-now-line';
+    // top% is relative to the row's own height
+    line.style.top = (nowFrac * 100).toFixed(1) + '%';
+
+    const timeLbl = document.createElement('div');
+    timeLbl.className = 'tt-dv-now-time';
+    timeLbl.textContent = nowStr;
+    timeLbl.style.top = (nowFrac * 100).toFixed(1) + '%';
+
+    nowRowEl.appendChild(line);
+    nowRowEl.appendChild(timeLbl);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// SHOW TEACHER / STUDENT TT
+// ═══════════════════════════════════════════════════════
+function showTeacherTT(teacher) {
+  currentGetSlots = (d,pid) => { const s=(teacher.tt[d]||{})[pid]; return s&&s.length?s:null; };
+  currentIsTeacher = true;
+  currentEntityName = `👤 ${esc(teacher.name)}`;
+  currentEntitySub  = esc(teacher.raw);
+  // Auto-jump to today if in day view
+  if (currentView === 'day') jumpToToday();
+  else renderCurrentEntity();
+}
+
 function showStudentTT(student) {
-  const content=document.getElementById('viewer-content');
-  document.getElementById('viewer-empty').style.display='none';
-  content.style.display='block'; content.innerHTML='';
-  const wrap=document.createElement('div'); wrap.className='tt-view';
-  wrap.innerHTML=`<div class="tt-entity-name">🎒 ${esc(student.name)}</div>
-    <div class="tt-entity-sub">Grade ${esc(student.grade)} · ${student.sectionCodes.join(', ')}</div>`;
-  renderWeek(wrap, (d,pid)=>{
-    const s=(student.tt[d]||{})[pid]; return s&&s.length?s:null;
-  }, false);
-  content.appendChild(wrap);
-  scheduleNowLineUpdate();
+  currentGetSlots = (d,pid) => { const s=(student.tt[d]||{})[pid]; return s&&s.length?s:null; };
+  currentIsTeacher = false;
+  currentEntityName = `🎒 ${esc(student.name)}`;
+  const divStr = student.division ? ` ${student.division}` : '';
+  currentEntitySub  = `Grade ${student.grade}${divStr} · ${student.sectionCodes.join(', ')}`;
+  if (currentView === 'day') jumpToToday();
+  else renderCurrentEntity();
 }
 
 // ── Refresh now-line every minute ──
@@ -969,10 +1426,8 @@ let _nowTimer=null;
 function scheduleNowLineUpdate() {
   if (_nowTimer) clearInterval(_nowTimer);
   _nowTimer=setInterval(()=>{
-    // Re-render the current view if viewer is shown
-    if (document.getElementById('viewer-page').style.display==='flex') {
-      const active=document.querySelector('#viewer-teacher-list .viewer-nav-btn.active, #viewer-student-list .viewer-nav-btn.active');
-      if (active) active.click();
+    if (document.getElementById('viewer-page').style.display==='flex' && currentGetSlots) {
+      renderCurrentEntity();
     }
   }, 60000);
 }
