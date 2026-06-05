@@ -120,6 +120,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .tt-bar-subj{font-family:var(--mono);font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tt-bar-grade{font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;flex-shrink:0;white-space:nowrap}
 .tt-bar-room{font-size:10px;margin-top:2px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-bar-teacher{font-size:9px;margin-top:1px;opacity:.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-dv-slot-room{font-size:11px;margin-top:2px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-dv-slot-teacher{font-size:9px;opacity:.6;white-space:nowrap}
 .tt-empty-cell{color:var(--muted2);font-family:var(--mono);font-size:12px;text-align:center;flex:1;display:flex;align-items:center;justify-content:center}
 
 /* CURRENT TIME LINE */
@@ -323,23 +326,52 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
   .tt-p-label { font-size: 8pt !important; color: #333 !important; }
   .tt-p-time  { font-size: 7pt !important; color: #666 !important; }
   .tt-period-body { min-height: 36pt !important; padding: 2pt !important; background: #fff !important; }
+  /* ── week view bars: subject big, room medium, teacher/grade small ── */
   .tt-bar {
     border-left-width: 3pt !important;
-    padding: 3pt 5pt !important;
+    padding: 4pt 5pt !important;
     border-radius: 2pt !important;
     margin-bottom: 2pt !important;
+    display: block !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  .tt-bar-subj { font-size: 8pt !important; color: #000 !important; }
-  .tt-bar-grade { font-size: 7pt !important; }
-  .tt-bar-room { font-size: 7pt !important; color: #333 !important; }
+  /* stack subject, room, teacher vertically */
+  .tt-bar-top { display: block !important; }
+  .tt-bar-subj {
+    display: block !important;
+    font-size: 9pt !important;
+    font-weight: 700 !important;
+    color: #000 !important;
+    white-space: normal !important;
+    line-height: 1.2 !important;
+  }
+  /* room: medium weight, shown on second line */
+  .tt-bar-room {
+    display: block !important;
+    font-size: 8pt !important;
+    font-weight: 600 !important;
+    color: #222 !important;
+    margin-top: 1pt !important;
+    opacity: 1 !important;
+  }
+  /* grade badge / teacher: tiny, de-emphasised */
+  .tt-bar-grade {
+    display: inline-block !important;
+    font-size: 6pt !important;
+    font-weight: 400 !important;
+    padding: 0 3pt !important;
+    margin-top: 1pt !important;
+    color: #666 !important;
+    background: transparent !important;
+    border: none !important;
+  }
   .tt-empty-cell { font-size: 8pt !important; color: #aaa !important; }
   .tt-break { min-width: 36pt !important; background: #fafafa !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .tt-break-label { font-size: 7pt !important; color: #888 !important; }
   .tt-now-line { display: none !important; }
 
-  /* day view */
+  /* ── day view slots: same priority ── */
   .tt-day-view { display: table !important; width: 100% !important; border-collapse: collapse !important; border: 1px solid #ccc !important; height: auto !important; }
   .tt-dv-row { display: table-row !important; height: auto !important; min-height: 0 !important; page-break-inside: avoid; }
   .tt-dv-row.is-break { height: 18pt !important; }
@@ -347,10 +379,68 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
   .tt-dv-period-label { font-size: 9pt !important; color: #333 !important; }
   .tt-dv-period-time  { font-size: 7pt !important; color: #666 !important; }
   .tt-dv-slots { display: table-cell !important; padding: 3pt 5pt !important; border-bottom: 1px solid #eee !important; vertical-align: middle !important; background: #fff !important; }
-  .tt-dv-slot { display: inline-block !important; border-left-width: 3pt !important; padding: 3pt 6pt !important; margin: 2pt !important; border-radius: 2pt !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  .tt-dv-slot-subj { font-size: 8pt !important; color: #000 !important; }
-  .tt-dv-slot-meta { font-size: 7pt !important; color: #444 !important; }
+  .tt-dv-slot {
+    display: inline-block !important;
+    vertical-align: top !important;
+    border-left-width: 3pt !important;
+    padding: 3pt 6pt !important;
+    margin: 2pt !important;
+    border-radius: 2pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .tt-dv-slot-top { display: block !important; }
+  .tt-dv-slot-subj {
+    display: block !important;
+    font-size: 9pt !important;
+    font-weight: 700 !important;
+    color: #000 !important;
+    line-height: 1.2 !important;
+  }
+  .tt-dv-slot-meta {
+    display: block !important;
+    font-size: 7.5pt !important;
+    color: #333 !important;
+    margin-top: 1pt !important;
+    gap: 4pt !important;
+  }
+  /* room span inside meta: slightly larger */
+  .tt-dv-slot-meta span:first-child {
+    font-weight: 600 !important;
+    font-size: 8pt !important;
+    color: #222 !important;
+  }
+  /* teacher span: small and muted */
+  .tt-dv-slot-meta span:last-child {
+    font-size: 6.5pt !important;
+    color: #666 !important;
+    font-weight: 400 !important;
+  }
   .tt-dv-now-line, .tt-dv-now-time { display: none !important; }
+
+  /* week bar teacher line: tiny and grey */
+  .tt-bar-teacher {
+    display: block !important;
+    font-size: 6pt !important;
+    color: #888 !important;
+    opacity: 1 !important;
+    margin-top: 1pt !important;
+  }
+  /* day slot room: bold, prominent */
+  .tt-dv-slot-room {
+    display: block !important;
+    font-size: 8pt !important;
+    font-weight: 600 !important;
+    color: #222 !important;
+    margin-top: 1pt !important;
+    opacity: 1 !important;
+  }
+  /* day slot teacher: tiny */
+  .tt-dv-slot-teacher {
+    font-size: 6.5pt !important;
+    color: #888 !important;
+    font-weight: 400 !important;
+  }
 
   /* preserve subject colours on print */
   .c-phy  { background: #d4eff5 !important; border-color: #4fc3d4 !important; }
@@ -1124,17 +1214,19 @@ function renderWeek(container, getDayPeriodSlots, isTeacherView) {
           const colorCls=getSubjectColor(slot.sub);
           bar.className=`tt-bar ${colorCls} grade-${slot.grade||''}`;
           if (isTeacherView) {
-            bar.innerHTML=`<div class="tt-bar-top">
-              <span class="tt-bar-subj">${esc(slot.sub)}</span>
-              <span class="tt-bar-grade">${esc(slot.grade)}</span>
-            </div>
-            ${slot.room?`<div class="tt-bar-room">🏫 ${esc(slot.room)}</div>`:''}`;
+            bar.innerHTML=`
+              <div class="tt-bar-top">
+                <span class="tt-bar-subj">${esc(slot.sub)}</span>
+                <span class="tt-bar-grade">${esc(slot.grade)}</span>
+              </div>
+              ${slot.room?`<div class="tt-bar-room">🏫 ${esc(slot.room)}</div>`:''}`;
           } else {
-            bar.innerHTML=`<div class="tt-bar-top">
-              <span class="tt-bar-subj">${esc(slot.sub)}</span>
-              ${slot.room?`<span class="tt-bar-grade">🏫 ${esc(slot.room)}</span>`:''}
-            </div>
-            ${slot.teacher?`<div class="tt-bar-room">👤 ${esc(slot.teacher)}</div>`:''}`;
+            bar.innerHTML=`
+              <div class="tt-bar-top">
+                <span class="tt-bar-subj">${esc(slot.sub)}</span>
+              </div>
+              ${slot.room?`<div class="tt-bar-room">🏫 ${esc(slot.room)}</div>`:''}
+              ${slot.teacher?`<div class="tt-bar-teacher">👤 ${esc(slot.teacher)}</div>`:''}`;
           }
           body.appendChild(bar);
         }
@@ -1330,21 +1422,15 @@ function renderDay(container, dayName, getDayPeriodSlots, isTeacherView) {
           const bar = document.createElement('div');
           bar.className = `tt-dv-slot ${getSubjectColor(slot.sub)} grade-${slot.grade||''}`;
           if (isTeacherView) {
-            bar.innerHTML = `<div class="tt-dv-slot-top">
-              <span class="tt-dv-slot-subj">${esc(slot.sub)}</span>
-              <span class="tt-bar-grade">${esc(slot.grade)}</span>
-            </div>
-            <div class="tt-dv-slot-meta">
-              ${slot.room ? `<span>🏫 ${esc(slot.room)}</span>` : ''}
-            </div>`;
+            bar.innerHTML = `
+              <div class="tt-dv-slot-subj">${esc(slot.sub)}</div>
+              ${slot.room ? `<div class="tt-dv-slot-room">🏫 ${esc(slot.room)}</div>` : ''}
+              <div class="tt-dv-slot-meta"><span class="tt-dv-slot-teacher">${esc(slot.grade)}</span></div>`;
           } else {
-            bar.innerHTML = `<div class="tt-dv-slot-top">
-              <span class="tt-dv-slot-subj">${esc(slot.sub)}</span>
-              ${slot.room ? `<span class="tt-bar-grade">🏫 ${esc(slot.room)}</span>` : ''}
-            </div>
-            <div class="tt-dv-slot-meta">
-              ${slot.teacher ? `<span>👤 ${esc(slot.teacher)}</span>` : ''}
-            </div>`;
+            bar.innerHTML = `
+              <div class="tt-dv-slot-subj">${esc(slot.sub)}</div>
+              ${slot.room ? `<div class="tt-dv-slot-room">🏫 ${esc(slot.room)}</div>` : ''}
+              ${slot.teacher ? `<div class="tt-dv-slot-meta"><span class="tt-dv-slot-teacher">👤 ${esc(slot.teacher)}</span></div>` : ''}`;
           }
           slotsCol.appendChild(bar);
         }
