@@ -383,28 +383,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 
 /* ── SUBSTITUTION ── */
 .tt-empty-cell.sub-eligible {
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background .12s, color .12s;
-  padding: 0 6px;
-  user-select: none;
+  cursor: pointer; border-radius: 4px;
+  transition: background .12s, color .12s; padding: 0 6px; user-select: none;
 }
 .tt-empty-cell.sub-eligible:hover { background: rgba(245,200,66,.12); color: var(--accent); }
 .tt-dv-empty.sub-eligible {
-  cursor: pointer;
-  border-radius: 4px;
-  padding: 3px 10px;
-  transition: background .12s, color .12s;
-  user-select: none;
+  cursor: pointer; border-radius: 4px; padding: 3px 10px;
+  transition: background .12s, color .12s; user-select: none;
 }
 .tt-dv-empty.sub-eligible:hover { background: rgba(245,200,66,.12); color: var(--accent); }
-
-/* substitution bar styling */
 .tt-bar.is-sub  { border-left-color: var(--accent) !important; background: rgba(245,200,66,.08) !important; }
 .tt-dv-slot.is-sub { border-left-color: var(--accent) !important; background: rgba(245,200,66,.08) !important; }
-.tt-bar.is-sub .tt-bar-subj,
-.tt-dv-slot.is-sub .tt-dv-slot-subj { color: var(--accent); }
-
+.tt-bar.is-sub .tt-bar-subj, .tt-dv-slot.is-sub .tt-dv-slot-subj { color: var(--accent); }
 .sub-tag {
   font-family: var(--mono); font-size: 9px; color: var(--accent);
   background: rgba(245,200,66,.18); border: 1px solid rgba(245,200,66,.3);
@@ -416,18 +406,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
   transition: color .1s; margin-left: auto;
 }
 .sub-clear-btn:hover { color: var(--red); }
-
-/* Sub assignment modal */
 #sub-modal .modal { min-width: 300px; max-width: 380px; }
 .sub-modal-field { margin-bottom: 12px; }
 .sub-modal-field label {
-  display: block; font-family: var(--mono); font-size: 10px;
-  color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 5px;
+  display: block; font-family: var(--mono); font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 5px;
 }
 .sub-modal-field input {
   width: 100%; background: var(--surface2); border: 1px solid var(--border2);
-  border-radius: 4px; padding: 7px 10px; font-family: var(--mono); font-size: 12px;
-  color: var(--text); outline: none;
+  border-radius: 4px; padding: 7px 10px; font-family: var(--mono);
+  font-size: 12px; color: var(--text); outline: none;
 }
 .sub-modal-field input:focus { border-color: var(--accent2); }
 </style>
@@ -555,7 +543,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
   </div>
 </div>
 
-<!-- Substitution modal -->
 <div class="modal-bg" id="sub-modal">
   <div class="modal">
     <h3>Assign Substitution</h3>
@@ -1189,10 +1176,7 @@ function renderWeek(container, getDayPeriodSlots, isTeacherView) {
       cell.appendChild(hdr);
 
       const body=document.createElement('div'); body.className='tt-period-body';
-
-      // Check for active substitution on this period
       const subData = currentEntityKey ? getSub(currentEntityKey, d, p.id) : null;
-
       if (subData) {
         body.appendChild(makeSubBar_week(subData, currentEntityKey, d, p.id));
       } else if (slots&&slots.length) {
@@ -1379,6 +1363,12 @@ function renderDay(container, dayName, getDayPeriodSlots, isTeacherView) {
     const row = document.createElement('div');
     row.className = 'tt-dv-row' + (isBreak ? ' is-break' : '');
     row.style.position = 'relative'; // always relative for now-line
+    // Give each lesson row flex proportional to its duration so rows are the
+    // same height per-minute across all days (SAT 50 min vs weekday 40 min).
+    if (!isBreak) {
+      const durMins = pEnd - pStart;
+      row.style.flex = `${durMins} 0 0`;
+    }
 
     // ── Period label column ──
     const periodCol = document.createElement('div');
@@ -1404,7 +1394,6 @@ function renderDay(container, dayName, getDayPeriodSlots, isTeacherView) {
     } else {
       const slots = getDayPeriodSlots(dayName, p.id);
       const subData = currentEntityKey ? getSub(currentEntityKey, dayName, p.id) : null;
-
       if (subData) {
         slotsCol.appendChild(makeSubBar_day(subData, currentEntityKey, dayName, p.id));
       } else if (slots && slots.length) {
@@ -1490,7 +1479,6 @@ function showTeacherTT(teacher) {
   currentEntityName = `👤 ${esc(teacher.name)}`;
   currentEntitySub  = esc(teacher.raw);
   currentEntityKey  = 'T:' + teacher.name;
-  // Auto-jump to today if in day view
   if (currentView === 'day') jumpToToday();
   else renderCurrentEntity();
 }
@@ -1570,153 +1558,98 @@ function clearAllData(){
 // SUBSTITUTIONS
 // ═══════════════════════════════════════════════════════
 const SUB_KEY = 'ttOS_subs_v1';
-
-// Storage shape: { "entityKey|day|periodId": { subject, room, assignedDate } }
-// entityKey = teacher name or student name (unique enough in context)
-
 let _subPendingCb = null;
-
-function subStorageKey(entityKey, day, periodId) {
-  return `${entityKey}||${day}||${periodId}`;
-}
-
-function loadSubs() {
-  try { return JSON.parse(localStorage.getItem(SUB_KEY) || '{}'); } catch(e) { return {}; }
-}
-
-function saveSubs(data) {
-  localStorage.setItem(SUB_KEY, JSON.stringify(data));
-}
-
-function todayDateStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-// Returns substitution object for this slot, or null
-function getSub(entityKey, day, periodId) {
-  const data = loadSubs();
-  const entry = data[subStorageKey(entityKey, day, periodId)];
-  if (!entry) return null;
-  // Auto-expire: clear if assigned on a previous day
-  if (entry.assignedDate && entry.assignedDate !== todayDateStr()) {
-    clearSub(entityKey, day, periodId);
-    return null;
-  }
-  return entry;
-}
-
-function setSub(entityKey, day, periodId, subject, room) {
-  const data = loadSubs();
-  data[subStorageKey(entityKey, day, periodId)] = { subject, room, assignedDate: todayDateStr() };
-  saveSubs(data);
-}
-
-function clearSub(entityKey, day, periodId) {
-  const data = loadSubs();
-  delete data[subStorageKey(entityKey, day, periodId)];
-  saveSubs(data);
-}
-
-// Open the substitution modal
-function openSubModal(entityKey, day, periodId, periodLabel, periodTime, cb) {
-  const ctx = document.getElementById('sub-modal-context');
-  ctx.textContent = `${periodLabel} · ${periodTime} · ${day}`;
-  document.getElementById('sub-input-subject').value = '';
-  document.getElementById('sub-input-room').value = '';
-  document.getElementById('sub-modal').classList.add('open');
-  // Focus subject field
-  setTimeout(()=>document.getElementById('sub-input-subject').focus(), 80);
-  _subPendingCb = cb;
-  // Allow Enter key to confirm
-  const onKey = (e) => {
-    if (e.key === 'Enter') { closeSubModal(true); document.removeEventListener('keydown', onKey); }
-    if (e.key === 'Escape') { closeSubModal(false); document.removeEventListener('keydown', onKey); }
-  };
-  document.addEventListener('keydown', onKey);
-}
-
-function closeSubModal(ok) {
-  document.getElementById('sub-modal').classList.remove('open');
-  if (ok && _subPendingCb) {
-    const subject = document.getElementById('sub-input-subject').value.trim();
-    const room    = document.getElementById('sub-input-room').value.trim();
-    if (subject || room) _subPendingCb(subject, room);
-  }
-  _subPendingCb = null;
-}
-
-// ── Build a substitution bar element (week view) ──
-function makeSubBar_week(sub, entityKey, day, periodId) {
-  const bar = document.createElement('div');
-  const colorCls = getSubjectColor(sub.subject);
-  bar.className = `tt-bar ${colorCls} is-sub`;
-  bar.innerHTML = `
-    <div class="tt-bar-top" style="gap:4px">
-      <span class="tt-bar-subj">${esc(sub.subject||'—')}</span>
-      <span class="sub-tag">SUB</span>
-      <button class="sub-clear-btn" title="Clear substitution">×</button>
-    </div>
-    ${sub.room ? `<div class="tt-bar-room">🏫 ${esc(sub.room)}</div>` : ''}`;
-  bar.querySelector('.sub-clear-btn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    clearSub(entityKey, day, periodId);
-    renderCurrentEntity();
-    toast('Substitution cleared');
-  });
-  return bar;
-}
-
-// ── Build a substitution slot element (day view) ──
-function makeSubBar_day(sub, entityKey, day, periodId) {
-  const bar = document.createElement('div');
-  const colorCls = getSubjectColor(sub.subject);
-  bar.className = `tt-dv-slot ${colorCls} is-sub`;
-  bar.innerHTML = `
-    <div class="tt-dv-slot-top" style="display:flex;align-items:center;gap:5px">
-      <span class="tt-dv-slot-subj" style="flex:1">${esc(sub.subject||'—')}</span>
-      <span class="sub-tag">SUB</span>
-      <button class="sub-clear-btn" title="Clear substitution">×</button>
-    </div>
-    ${sub.room ? `<div class="tt-dv-slot-room">🏫 ${esc(sub.room)}</div>` : ''}`;
-  bar.querySelector('.sub-clear-btn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    clearSub(entityKey, day, periodId);
-    renderCurrentEntity();
-    toast('Substitution cleared');
-  });
-  return bar;
-}
-
-// ── Make an empty cell clickable to assign substitution ──
-function makeEmptyClickable_week(empEl, entityKey, day, periodId, periodLabel, periodTime) {
-  empEl.classList.add('sub-eligible');
-  empEl.title = 'Click to assign substitution';
-  empEl.addEventListener('click', () => {
-    openSubModal(entityKey, day, periodId, periodLabel, periodTime, (subject, room) => {
-      setSub(entityKey, day, periodId, subject, room);
-      renderCurrentEntity();
-      toast(`Substitution assigned: ${subject}`);
-    });
-  });
-}
-
-function makeEmptyClickable_day(empEl, entityKey, day, periodId, periodLabel, periodTime) {
-  empEl.classList.add('sub-eligible');
-  empEl.title = 'Click to assign substitution';
-  empEl.addEventListener('click', () => {
-    openSubModal(entityKey, day, periodId, periodLabel, periodTime, (subject, room) => {
-      setSub(entityKey, day, periodId, subject, room);
-      renderCurrentEntity();
-      toast(`Substitution assigned: ${subject}`);
-    });
-  });
-}
-
-// ── Current entity key for substitution lookups ──
 let currentEntityKey = '';
 
+function subStorageKey(ek,d,pid){ return `${ek}||${d}||${pid}`; }
+function loadSubs(){ try{ return JSON.parse(localStorage.getItem(SUB_KEY)||'{}'); }catch(e){ return {}; } }
+function saveSubs(data){ localStorage.setItem(SUB_KEY,JSON.stringify(data)); }
+function todayDateStr(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 
+function getSub(ek,day,pid){
+  const data=loadSubs(), entry=data[subStorageKey(ek,day,pid)];
+  if (!entry) return null;
+  if (entry.assignedDate && entry.assignedDate!==todayDateStr()){ clearSub(ek,day,pid); return null; }
+  return entry;
+}
+function setSub(ek,day,pid,subject,room){
+  const data=loadSubs(); data[subStorageKey(ek,day,pid)]={subject,room,assignedDate:todayDateStr()}; saveSubs(data);
+}
+function clearSub(ek,day,pid){
+  const data=loadSubs(); delete data[subStorageKey(ek,day,pid)]; saveSubs(data);
+}
+
+function openSubModal(ek,day,pid,label,time,cb){
+  document.getElementById('sub-modal-context').textContent=`${label} · ${time} · ${day}`;
+  document.getElementById('sub-input-subject').value='';
+  document.getElementById('sub-input-room').value='';
+  document.getElementById('sub-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('sub-input-subject').focus(),80);
+  _subPendingCb=cb;
+  const onKey=(e)=>{
+    if(e.key==='Enter'){ closeSubModal(true); document.removeEventListener('keydown',onKey); }
+    if(e.key==='Escape'){ closeSubModal(false); document.removeEventListener('keydown',onKey); }
+  };
+  document.addEventListener('keydown',onKey);
+}
+function closeSubModal(ok){
+  document.getElementById('sub-modal').classList.remove('open');
+  if(ok&&_subPendingCb){
+    const subject=document.getElementById('sub-input-subject').value.trim();
+    const room=document.getElementById('sub-input-room').value.trim();
+    if(subject||room) _subPendingCb(subject,room);
+  }
+  _subPendingCb=null;
+}
+
+function makeSubBar_week(sub,ek,day,pid){
+  const bar=document.createElement('div');
+  bar.className=`tt-bar ${getSubjectColor(sub.subject)} is-sub`;
+  bar.innerHTML=`<div class="tt-bar-top" style="gap:4px">
+    <span class="tt-bar-subj">${esc(sub.subject||'—')}</span>
+    <span class="sub-tag">SUB</span>
+    <button class="sub-clear-btn" title="Clear substitution">×</button>
+  </div>
+  ${sub.room?`<div class="tt-bar-room">🏫 ${esc(sub.room)}</div>`:''}`;
+  bar.querySelector('.sub-clear-btn').addEventListener('click',(e)=>{
+    e.stopPropagation(); clearSub(ek,day,pid); renderCurrentEntity(); toast('Substitution cleared');
+  });
+  return bar;
+}
+function makeSubBar_day(sub,ek,day,pid){
+  const bar=document.createElement('div');
+  bar.className=`tt-dv-slot ${getSubjectColor(sub.subject)} is-sub`;
+  bar.innerHTML=`<div class="tt-dv-slot-top" style="display:flex;align-items:center;gap:5px">
+    <span class="tt-dv-slot-subj" style="flex:1">${esc(sub.subject||'—')}</span>
+    <span class="sub-tag">SUB</span>
+    <button class="sub-clear-btn" title="Clear substitution">×</button>
+  </div>
+  ${sub.room?`<div class="tt-dv-slot-meta"><span>🏫 ${esc(sub.room)}</span></div>`:''}`;
+  bar.querySelector('.sub-clear-btn').addEventListener('click',(e)=>{
+    e.stopPropagation(); clearSub(ek,day,pid); renderCurrentEntity(); toast('Substitution cleared');
+  });
+  return bar;
+}
+function makeEmptyClickable_week(el,ek,day,pid,label,time){
+  el.classList.add('sub-eligible'); el.title='Click to assign substitution';
+  el.addEventListener('click',()=>{
+    openSubModal(ek,day,pid,label,time,(subject,room)=>{
+      setSub(ek,day,pid,subject,room); renderCurrentEntity(); toast(`Substitution assigned: ${subject}`);
+    });
+  });
+}
+function makeEmptyClickable_day(el,ek,day,pid,label,time){
+  el.classList.add('sub-eligible'); el.title='Click to assign substitution';
+  el.addEventListener('click',()=>{
+    openSubModal(ek,day,pid,label,time,(subject,room)=>{
+      setSub(ek,day,pid,subject,room); renderCurrentEntity(); toast(`Substitution assigned: ${subject}`);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function toast(msg,dur=2200){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),dur); }
 let _confirmCb=null;
