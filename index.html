@@ -1208,19 +1208,20 @@ function renderWeek(container, getDayPeriodSlots, isTeacherView) {
       strip.appendChild(cell);
     }
 
-    // Current-time red line (today only, for non-break periods)
+    // Current-time red line (today only)
     if (isToday) {
+      const now=new Date();
+      const nowMins=now.getHours()*60+now.getMinutes();
+      // Find the overall school window (first non-break start → last non-break end)
       const nonBreakPeriods=periods.filter(p=>!p.isBreak);
       if (nonBreakPeriods.length) {
-        const now=new Date();
-        const nowMins=now.getHours()*60+now.getMinutes();
         const schoolStart=timeToMins(nonBreakPeriods[0].time.split('–')[0]);
         const schoolEnd=timeToMins(nonBreakPeriods[nonBreakPeriods.length-1].time.split('–')[1]);
         if (nowMins>=schoolStart&&nowMins<=schoolEnd) {
-          // We render the line as absolutely positioned after DOM insertion
-          // Store fraction as data attribute, apply after layout
-          strip.dataset.nowFraction=((nowMins-schoolStart)/(schoolEnd-schoolStart)).toFixed(4);
+          // Store nowMins and the period list so we can compute pixel offset after layout
+          strip.dataset.nowMins=nowMins;
           strip.dataset.hasNow='1';
+          strip.dataset.periods=JSON.stringify(periods.map(p=>({time:p.time,isBreak:!!p.isBreak})));
         }
       }
     }
@@ -1230,14 +1231,40 @@ function renderWeek(container, getDayPeriodSlots, isTeacherView) {
   }
   container.appendChild(weekEl);
 
-  // Apply now-lines after DOM insertion (need offsetWidth)
+  // Apply now-lines after DOM insertion (need real cell offsetWidths)
   requestAnimationFrame(()=>{
     weekEl.querySelectorAll('[data-has-now]').forEach(strip=>{
-      const frac=parseFloat(strip.dataset.nowFraction);
-      const totalW=strip.scrollWidth;
+      const nowMins=parseInt(strip.dataset.nowMins,10);
+      const periods=JSON.parse(strip.dataset.periods);
+      const cells=[...strip.children]; // period cells + break cells in DOM order
+
+      // Walk periods and cells together, accumulating pixel offset
+      let pxOffset=0;
+      let cellIdx=0;
+      for (let i=0;i<periods.length;i++) {
+        const p=periods[i];
+        const cell=cells[cellIdx++];
+        if (!cell) break;
+        const cellW=cell.offsetWidth;
+        const [startStr,endStr]=p.time.split('–');
+        const pStart=timeToMins(startStr), pEnd=timeToMins(endStr);
+
+        if (nowMins<=pStart) {
+          // now is before this period — line sits at left edge of this cell
+          break;
+        } else if (nowMins>=pEnd) {
+          // now is after this period — accumulate full cell width
+          pxOffset+=cellW;
+        } else {
+          // now is inside this cell — add fractional width
+          pxOffset+=cellW*(nowMins-pStart)/(pEnd-pStart);
+          break;
+        }
+      }
+
       const line=document.createElement('div');
       line.className='tt-now-line';
-      line.style.left=(frac*totalW)+'px';
+      line.style.left=pxOffset+'px';
       strip.appendChild(line);
     });
   });
